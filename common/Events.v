@@ -81,7 +81,12 @@ Inductive inject_mem_effect (mu: meminj): mem_effect -> mem_effect -> Prop :=
     list_memval_inject mu vals1 vals2 ->
     inject_mem_effect mu (Write b1 ofs1 vals1) (Write b2 (ofs1 + delt) vals2)
 | InjectAlloc: forall lo hi b1 b2 delt,
-    mu b1 = Some (b2, delt) -> (* should delt = 0 *)
+    (* Notice that delt <> 0. 
+       In general we know that external allocations don't move (so delta = 0)
+       but that makes harder to de-compose:
+       an injection by a composed injection can't be split into two injections.
+     *)
+    mu b1 = Some (b2, delt) -> 
     inject_mem_effect mu (Alloc b1 hi lo) (Alloc b2 (hi+delt) (lo+delt))
 | InjectFree: forall l1 l2,
     list_inject_hi_low mu l1 l2 ->
@@ -95,8 +100,8 @@ Inductive inject_mem_effect_strong (mu: meminj): mem_effect -> mem_effect -> Pro
     list_memval_inject_strong mu vals1 vals2 ->
     inject_mem_effect_strong mu (Write b1 ofs1 vals1) (Write b2 (ofs1 + delt) vals2)
 | InjectAllocStrong:forall lo hi b1 b2 delt,
-    mu b1 = Some (b2, delt) -> (* should delt = 0 *)
-    inject_mem_effect_strong mu (Alloc b1 hi lo) (Alloc b2 (hi+delt) (lo+delt))
+    mu b1 = Some (b2, delt) -> 
+    inject_mem_effect_strong mu (Alloc b1 hi lo)(Alloc b2 (hi+delt) (lo+delt))
 | InjectFreeStrong: forall l1 l2,
     list_inject_hi_low mu l1 l2 ->
     inject_mem_effect_strong mu (Free l1) (Free l2).
@@ -801,7 +806,7 @@ Section StrongRelaxedInjections.
              econstructor; eauto with compose_inj.
              (unfold compose_meminj; rewrite H; rewrite H6); auto.
            - repeat rewrite <- Z.add_assoc. econstructor.
-             unfold compose_meminj; rewrite H, H5; auto.
+              unfold compose_meminj; rewrite H, H5; auto.
     Qed.
     Hint Resolve inject_mem_effect_strong_compose: compose_inj.
     Lemma list_inject_event_compose: composes_inj list_inject_mem_effect.
