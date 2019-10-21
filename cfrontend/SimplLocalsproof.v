@@ -2268,7 +2268,7 @@ Proof.
   - econstructor; try apply Hfunc_ptr; eauto.
     + rewrite Hfundef_pres; assumption.
     + admit. (* globals fresh*)
-    + admit. (* params don't change, should vars be params? *)
+   (* + admit. (* params don't change, should vars be params? *) *)
   - !goal (match_states _ _).
     econstructor; eauto.
     + simpl; rewrite Htrans_f; reflexivity.
